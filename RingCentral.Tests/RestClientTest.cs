@@ -6,11 +6,12 @@ namespace RingCentral.Tests
     public class RestClientTest
     {
         [Fact]
-        public async void GetTest()
+        public async void AuthorizeTest()
         {
-            var rc = new RestClient();
-            var result = await rc.Get("http://github.com");
-            Assert.Contains("GitHub", result);
+            var rc = new RestClient("", "", false);
+            var result = await rc.Authorize("username", "exension", "password");
+            var s = await result.Content.ReadAsStringAsync();
+            Console.WriteLine(s);
         }
     }
 }

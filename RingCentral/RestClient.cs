@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RingCentral
@@ -29,7 +32,18 @@ namespace RingCentral
             var client = new HttpClient();
             var requestMessage = new HttpRequestMessage
             {
-                RequestUri = new Uri(this.server, "/restapi/oauth/token")
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(this.server, "/restapi/oauth/token"),
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    { "grant_type", "password" },
+                    { "username", username },
+                    { "extension", extension },
+                    { "password", password },
+                }),
+                Headers = {
+                    { HttpRequestHeader.Authorization.ToString(), string.Format("Basic {0}", Convert.ToBase64String(Encoding.UTF8.GetBytes(this.clientId + ":" + this.clientSecret))) }
+                }
             };
             return await client.SendAsync(requestMessage);
         }

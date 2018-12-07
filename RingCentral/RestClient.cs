@@ -42,10 +42,19 @@ namespace RingCentral
                     { "password", password },
                 }),
                 Headers = {
-                    { HttpRequestHeader.Authorization.ToString(), string.Format("Basic {0}", Convert.ToBase64String(Encoding.UTF8.GetBytes(this.clientId + ":" + this.clientSecret))) }
+                    { HttpRequestHeader.Authorization.ToString(),  this.BasicHeader}
                 }
             };
             return await client.SendAsync(requestMessage);
+        }
+
+        private string BasicHeader
+        {
+            get
+            {
+                var bytes = Encoding.UTF8.GetBytes(string.Format("{0}:{1}", this.clientId, this.clientSecret));
+                return string.Format("Basic {0}", Convert.ToBase64String(bytes));
+            }
         }
     }
 }

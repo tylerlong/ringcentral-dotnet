@@ -24,6 +24,8 @@ namespace RingCentral.Tests
             Assert.Equal(HttpStatusCode.OK, responseMessage.StatusCode);
             var responseString = await responseMessage.Content.ReadAsStringAsync();
             Assert.Contains("access_token", responseString);
+            Assert.NotNull(rc.token);
+            Assert.NotEmpty(rc.token.access_token);
         }
     }
 }

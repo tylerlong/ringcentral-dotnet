@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace RingCentral
 {
@@ -15,12 +17,17 @@ namespace RingCentral
         public string clientId;
         public string clientSecret;
         public Uri server;
+        public TokenInfo token;
 
-        public RestClient(string clientId, string clientSecret, string server)
+        public RestClient(string clientId, string clientSecret, Uri server)
         {
             this.clientId = clientId;
             this.clientSecret = clientSecret;
-            this.server = new Uri(server);
+            this.server = server;
+        }
+        public RestClient(string clientId, string clientSecret, string server)
+            : this(clientId, clientSecret, new Uri(server))
+        {
         }
         public RestClient(string clientId, string clientSecret, bool production = false)
             : this(clientId, clientSecret, production ? ProductionServer : SandboxServer)
@@ -29,8 +36,7 @@ namespace RingCentral
 
         public async Task<HttpResponseMessage> Authorize(string username, string extension, string password)
         {
-            var client = new HttpClient();
-            var requestMessage = new HttpRequestMessage
+            var httpRequestMessage = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
                 RequestUri = new Uri(this.server, "/restapi/oauth/token"),
@@ -40,21 +46,51 @@ namespace RingCentral
                     { "username", username },
                     { "extension", extension },
                     { "password", password },
-                }),
-                Headers = {
-                    { HttpRequestHeader.Authorization.ToString(),  this.BasicHeader}
-                }
+                })
             };
-            return await client.SendAsync(requestMessage);
+            this.token = null;
+            var httpResponseMessage = await Request(httpRequestMessage, true);
+            var json = await httpResponseMessage.Content.ReadAsStringAsync();
+            this.token = JsonConvert.DeserializeObject<TokenInfo>(json);
+            return httpResponseMessage;
         }
 
-        private string BasicHeader
+        public async Task<HttpResponseMessage> Post(string endpoint)
         {
-            get
+            var env = Environment.GetEnvironmentVariables();
+            var httpRequestMessage = new HttpRequestMessage
             {
-                var bytes = Encoding.UTF8.GetBytes(string.Format("{0}:{1}", this.clientId, this.clientSecret));
-                return string.Format("Basic {0}", Convert.ToBase64String(bytes));
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(this.server, endpoint),
+                Content = new StringContent(JsonConvert.SerializeObject(new CreateSMSMessage
+                {
+                    from = new MessageStoreCallerInfoRequest
+                    {
+                        phoneNumber = env["RINGCENTRAL_USERNAME"] as string
+                    },
+                    to = new MessageStoreCallerInfoRequest[] {
+                        new MessageStoreCallerInfoRequest {
+                            phoneNumber = "16506417402"
+                        }
+                    },
+                    text = "Hello world"
+                }), Encoding.UTF8, "application/json")
+            };
+            return await Request(httpRequestMessage);
+        }
+
+        public async Task<HttpResponseMessage> Request(HttpRequestMessage httpRequestMessage, bool basicAuthorization = false)
+        {
+            var httpClient = new HttpClient();
+            if (basicAuthorization)
+            {
+                httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes(string.Format("{0}:{1}", this.clientId, this.clientSecret))));
             }
+            else // bear authorization
+            {
+                httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this.token.access_token);
+            }
+            return await httpClient.SendAsync(httpRequestMessage);
         }
     }
 }

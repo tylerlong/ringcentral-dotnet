@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
+using System.Text;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace RingCentral.Tests
@@ -21,7 +24,20 @@ namespace RingCentral.Tests
                 env["RINGCENTRAL_EXTENSION"] as string,
                 env["RINGCENTRAL_PASSWORD"] as string
             );
-            responseMessage = await rc.Post("/restapi/v1.0/account/~/extension/~/sms");
+            var httpContent = new StringContent(JsonConvert.SerializeObject(new CreateSMSMessage
+            {
+                from = new MessageStoreCallerInfoRequest
+                {
+                    phoneNumber = env["RINGCENTRAL_USERNAME"] as string
+                },
+                to = new MessageStoreCallerInfoRequest[] {
+                        new MessageStoreCallerInfoRequest {
+                            phoneNumber = "16506417402"
+                        }
+                    },
+                text = "Hello world"
+            }), Encoding.UTF8, "application/json");
+            responseMessage = await rc.Post("/restapi/v1.0/account/~/extension/~/sms", httpContent);
             Assert.Equal(HttpStatusCode.OK, responseMessage.StatusCode);
             var responseString = await responseMessage.Content.ReadAsStringAsync();
             Assert.Contains("SMS", responseString);

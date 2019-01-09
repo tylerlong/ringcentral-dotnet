@@ -55,26 +55,14 @@ namespace RingCentral
             return httpResponseMessage;
         }
 
-        public async Task<HttpResponseMessage> Post(string endpoint)
+        public async Task<HttpResponseMessage> Post(string endpoint, HttpContent httpContent)
         {
             var env = Environment.GetEnvironmentVariables();
             var httpRequestMessage = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
                 RequestUri = new Uri(this.server, endpoint),
-                Content = new StringContent(JsonConvert.SerializeObject(new CreateSMSMessage
-                {
-                    from = new MessageStoreCallerInfoRequest
-                    {
-                        phoneNumber = env["RINGCENTRAL_USERNAME"] as string
-                    },
-                    to = new MessageStoreCallerInfoRequest[] {
-                        new MessageStoreCallerInfoRequest {
-                            phoneNumber = "16506417402"
-                        }
-                    },
-                    text = "Hello world"
-                }), Encoding.UTF8, "application/json")
+                Content = httpContent
             };
             return await Request(httpRequestMessage);
         }

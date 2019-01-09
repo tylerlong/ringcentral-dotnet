@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace RingCentral.Tests
@@ -8,7 +8,7 @@ namespace RingCentral.Tests
     public class RestClientTest
     {
         [Fact]
-        public async void AuthorizeTest()
+        public async Task AuthorizeTest()
         {
             var env = Environment.GetEnvironmentVariables();
             var rc = new RestClient(

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -41,7 +40,7 @@ namespace RingCentral
                 { "grant_type", "password" },
                 { "username", username },
                 { "extension", extension },
-                { "password", password },
+                { "password", password }
             });
             var httpResponseMessage = await Post("/restapi/oauth/token", httpContent, true);
             var json = await httpResponseMessage.Content.ReadAsStringAsync();

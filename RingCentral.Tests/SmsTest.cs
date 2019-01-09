@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -11,7 +11,7 @@ namespace RingCentral.Tests
     public class SmsTest
     {
         [Fact]
-        public async void SendSms()
+        public async Task SendSms()
         {
             var env = Environment.GetEnvironmentVariables();
             var rc = new RestClient(

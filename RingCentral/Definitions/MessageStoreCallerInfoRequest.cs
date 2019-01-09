@@ -1,5 +1,3 @@
-using System;
-
 namespace RingCentral
 {
     public class MessageStoreCallerInfoRequest

@@ -32,7 +32,7 @@ namespace RingCentral.Tests
                 },
                 to = new MessageStoreCallerInfoRequest[] {
                         new MessageStoreCallerInfoRequest {
-                            phoneNumber = "16506417402"
+                            phoneNumber = env["RINGCENTRAL_RECEIVER"] as string
                         }
                     },
                 text = "Hello world"

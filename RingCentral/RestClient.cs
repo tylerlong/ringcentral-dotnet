@@ -36,26 +36,20 @@ namespace RingCentral
 
         public async Task<HttpResponseMessage> Authorize(string username, string extension, string password)
         {
-            var httpRequestMessage = new HttpRequestMessage
+            var httpContent = new FormUrlEncodedContent(new Dictionary<string, string>
             {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri(this.server, "/restapi/oauth/token"),
-                Content = new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    { "grant_type", "password" },
-                    { "username", username },
-                    { "extension", extension },
-                    { "password", password },
-                })
-            };
-            this.token = null;
-            var httpResponseMessage = await Request(httpRequestMessage, true);
+                { "grant_type", "password" },
+                { "username", username },
+                { "extension", extension },
+                { "password", password },
+            });
+            var httpResponseMessage = await Post("/restapi/oauth/token", httpContent, true);
             var json = await httpResponseMessage.Content.ReadAsStringAsync();
             this.token = JsonConvert.DeserializeObject<TokenInfo>(json);
             return httpResponseMessage;
         }
 
-        public async Task<HttpResponseMessage> Post(string endpoint, HttpContent httpContent)
+        public async Task<HttpResponseMessage> Post(string endpoint, HttpContent httpContent, bool basicAuthorization = false)
         {
             var env = Environment.GetEnvironmentVariables();
             var httpRequestMessage = new HttpRequestMessage
@@ -64,7 +58,7 @@ namespace RingCentral
                 RequestUri = new Uri(this.server, endpoint),
                 Content = httpContent
             };
-            return await Request(httpRequestMessage);
+            return await Request(httpRequestMessage, basicAuthorization);
         }
 
         public async Task<HttpResponseMessage> Request(HttpRequestMessage httpRequestMessage, bool basicAuthorization = false)

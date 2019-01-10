@@ -50,7 +50,6 @@ namespace RingCentral
 
         public async Task<HttpResponseMessage> Post(string endpoint, HttpContent httpContent, bool basicAuthorization = false)
         {
-            var env = Environment.GetEnvironmentVariables();
             var httpRequestMessage = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
